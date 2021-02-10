@@ -1,7 +1,6 @@
 ---
 - hosts: all
   become: yes
-  remote_user: root
   vars:
     mysql_root_pswd: "1234"
 
@@ -50,6 +49,9 @@
           - curl
           - vim
           - python-PyMySQL
+          - poppler-utils
+          - urw-fonts
+          - libreoffice-headless
           - httpd
           - MariaDB-server 
           - MariaDB-client
@@ -204,3 +206,47 @@
         name: mariadb
         state: restarted
         enabled: yes
+    
+    - name: Adding ERLANG repos
+      shell: curl -s https://packagecloud.io/install/repositories/rabbitmq/erlang/script.rpm.sh | bash
+      
+    - name: Adding RabbitMQ repos
+      shell: curl -s https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.rpm.sh | bash
+      
+    - name: Installing ERLANG and RabbitMQ
+      yum:
+        name:
+          - erlang-23.1.1
+          - rabbitmq-server-3.8.4
+        state: present
+        
+    - name: Starting RabbitMQ
+      service: 
+        name: rabbitmq-server
+        state: started
+        enabled: yes
+        
+    - name: Enabling RabbitMQ management plugin
+      shell: rabbitmq-plugins enable rabbitmq_management
+        
+    - name: Copying RabbitMQ conf file
+      copy:
+        src: rabbitmq.conf
+        dest: /etc/rabbitmq/
+        mode: '0644'
+        
+    - name: Restarting RabbitMQ
+      service: 
+        name: rabbitmq-server
+        state: restarted
+        enabled: yes
+        
+    - name: Downloading WKHTML
+      get_url: >
+        url=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox-0.12.6-1.centos7.x86_64.rpm
+        dest=/tmp/wkhtmltox-0.12.6-1.centos7.x86_64.rpm
+      
+    - name: Installing WKHTML package.
+      yum:
+         name: /tmp/wkhtmltox-0.12.6-1.centos7.x86_64.rpm
+         state: present
