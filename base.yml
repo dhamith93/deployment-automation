@@ -1,0 +1,16 @@
+- name: Middleware installation [CentOS/RHEL]
+  hosts: all
+  become: yes
+  vars:
+    mysql_root_pswd: "MySecurePassword" # change this before execute
+    wkhtml_download_url: "https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox-0.12.6-1.centos7.x86_64.rpm"
+    ioncube_download_url: "https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz"
+    ioncube_tarfile: "ioncube_loaders.tar.gz"
+  roles:
+    - { role: dependencies, tags: dependencies }
+    - { role: php, tags: php }
+    - { role: ioncube, tags: ioncube }
+    - { role: mariadb, tags: mariadb }
+    - { role: rabbitmq, tags: rabbitmq }
+    - { role: firewall, tags: firewall }
+    - { role: final_config, tags: final_config }

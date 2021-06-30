@@ -1,0 +1,62 @@
+---
+- name: Enable MariaDB repository on CentOS
+  copy:
+    src: Mariadb.repo.centos
+    dest: /etc/yum.repos.d/Mariadb.repo
+    mode: '0644'
+  when: ansible_facts['distribution'] == "CentOS"
+
+- name: Enable MariaDB repository on RHEL
+  copy:
+    src: Mariadb.repo.redhat
+    dest: /etc/yum.repos.d/Mariadb.repo
+    mode: '0644'
+  when: ansible_facts['distribution'] == "Red Hat Enterprise Linux"
+
+- name: Installing MariaDB
+  yum:
+    name:
+      - MariaDB-server 
+      - MariaDB-client
+    state: present
+
+- name: Starting mariadb
+  service: 
+    name: mariadb
+    state: started
+    enabled: yes
+
+- name: Copying mariadb server.cnf file
+  copy:
+    src: server.cnf
+    dest: /etc/my.cnf.d/
+    mode: '0644'
+
+- name: Setting mariadb root password
+  mysql_user:
+    check_implicit_admin: true
+    login_user: root
+    login_password: "{{ mysql_root_pswd }}"
+    user: root
+    password: "{{ mysql_root_pswd }}"
+    host: localhost
+
+- name: Removing remote mariadb root
+  mysql_user:
+    check_implicit_admin: true
+    login_user: root
+    login_password: "{{ mysql_root_pswd }}"
+    user: root
+    password: "{{ mysql_root_pswd }}"
+    host: "{{ ansible_fqdn }}"
+    state: absent
+
+- name: Removing remote mariadb root %
+  mysql_user:
+    check_implicit_admin: true
+    login_user: root
+    login_password: "{{ mysql_root_pswd }}"
+    user: root
+    password: "{{ mysql_root_pswd }}"
+    host: "%"
+    state: absent
